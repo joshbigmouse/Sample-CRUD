@@ -1,0 +1,152 @@
+﻿@page "/todolist"
+@inject IJSRuntime JSRuntime
+<h3>To do List</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Task No.</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var todo in todos)
+        {
+            <tr>
+                <td>@todo.Id</td>
+                <td>@todo.Name</td>
+                <td>@todo.Description</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="EditTodo">Edit</button>
+                    <button class="btn btn-danger" @onclick="DeleteTodo">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+<button class="btn btn-success" @onclick="ShowCreateForm">Add New</button> 
+@if (showCreateForm)
+{
+    <div>
+        <br /><h4>Create New Todo</h4>
+        <form>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input class="form-control" id="name" @bind="newTodo.Name" />
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <input class="form-control" id="description" @bind="newTodo.Description" />
+            </div>
+            <br>
+            <button class="btn btn-primary" @onclick="CreateTodoAsync">Create</button>
+            <button class="btn btn-secondary" @onclick="CancelCreate">Cancel</button>
+        </form>
+
+        @if (newTodo.Id > 0)
+        {
+            <div>
+                <h4>Newly Created Todo</h4>
+                <p><strong>Name:</strong> @newTodo.Name</p>
+                <p><strong>Description:</strong> @newTodo.Description</p>
+            </div>
+        }
+    </div>
+}
+<script>
+    function updatePage(id, name, description) {
+        var table = document.querySelector(".table tbody");
+        var newRow = document.createElement("tr");
+        newRow.innerHTML = `
+                <td>${id}</td>
+                <td>${name}</td>
+                <td>${description}</td>
+                <td>
+                        <!-- ... -->
+
+    <button class="btn btn-primary" onclick="EditTodo">Edit</button>
+    <button class="btn btn-danger" onclick="DeleteTodo">Delete</button>
+
+    <!-- ... -->
+
+                </td>
+            `;
+        table.appendChild(newRow);
+    }
+</script>
+
+
+@code {
+    private List<Todo> todos = new List<Todo>();
+
+
+    private int nextTodoId = 1;
+    private bool showCreateForm = false;
+    private Todo newTodo = new Todo();
+
+
+
+    protected override void OnInitialized()
+    {
+        todos = new List<Todo>();
+    }
+
+    private void CreateTodo()
+    {
+        newTodo = new Todo();
+        newTodo.Id = nextTodoId++;
+        todos.Add(newTodo);
+        showCreateForm = false;
+        StateHasChanged();
+    }
+
+    private void ShowCreateForm()
+    {
+        showCreateForm = true;
+    }
+
+    private void CancelCreate()
+    {
+        newTodo = new Todo();
+        showCreateForm = false;
+    }
+
+    private void EditTodo()
+    {
+      
+    }
+
+    private void DeleteTodo()
+    {
+     
+    }
+
+    class Todo
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+    }
+
+    private async Task CreateTodoAsync()
+    {
+        newTodo.Id = nextTodoId++;
+        todos.Add(newTodo);
+        showCreateForm = false;
+
+        // Call the JavaScript function to update the page without a full postback.
+        await JSRuntime.InvokeVoidAsync("updatePage", newTodo.Id, newTodo.Name, newTodo.Description);
+
+        newTodo = new Todo(); // Clear the newTodo to prepare for the next entry
+    }
+
+
+
+
+
+}
+

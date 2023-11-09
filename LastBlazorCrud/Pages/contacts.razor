@@ -1,0 +1,62 @@
+﻿@page "/contacts"
+
+<h3>Contact List</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Email</th>
+            <th>Contact Number</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var contact in contacts)
+        {
+            <tr>
+                <td>@contact.Name</td>
+                <td>@contact.Address</td>
+                <td>@contact.Email</td>
+                <td>@contact.ContactNumber</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="EditContact">Edit</button>
+                    <button class="btn btn-danger" @onclick="DeleteContact">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button class="btn btn-success" @onclick="AddContact">Add Contact</button>
+
+@code {
+    List<Contact> contacts = new List<Contact>();
+
+    [Inject]
+    private ContactService ContactService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        contacts = await ContactService.GetContacts();
+    }
+
+    async void AddContact()
+    {
+        var newContact = new Contact();
+        await ContactService.CreateContact(newContact);
+        contacts.Add(newContact);
+    }
+
+    void EditContact(Contact contact)
+    {
+        // Implement edit functionality here
+    }
+
+    async void DeleteContact(Contact contact)
+    {
+        await ContactService.DeleteContact(contact.Id);
+        contacts.Remove(contact);
+    }
+}
